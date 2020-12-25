@@ -6,6 +6,7 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.permission.Permissions;
 import org.javacord.api.entity.user.UserStatus;
+import pyre.goldbot.commands.CountGoldCommand;
 import pyre.goldbot.commands.HelpCommand;
 import pyre.goldbot.commands.StatusCommand;
 
@@ -28,6 +29,7 @@ public class GoldBot {
 
         api.addListener(new HelpCommand());
         api.addListener(new StatusCommand());
+        api.addListener(new CountGoldCommand());
 
         // Print the invite url of your bot
         System.out.println("You can invite the bot by using the following url: "
