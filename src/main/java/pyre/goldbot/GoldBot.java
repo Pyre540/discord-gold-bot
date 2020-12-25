@@ -6,6 +6,8 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.permission.Permissions;
 import org.javacord.api.entity.user.UserStatus;
+import pyre.goldbot.commands.HelpCommand;
+import pyre.goldbot.commands.StatusCommand;
 
 public class GoldBot {
 
@@ -23,12 +25,9 @@ public class GoldBot {
                 .login()
                 .join();
         api.updateStatus(UserStatus.INVISIBLE);
-        // Add a listener which answers with "Pong!" if someone writes "!ping"
-        api.addMessageCreateListener(event -> {
-            if (event.getMessageContent().equalsIgnoreCase("!ping")) {
-                event.getChannel().sendMessage("Pong!");
-            }
-        });
+
+        api.addListener(new HelpCommand());
+        api.addListener(new StatusCommand());
 
         // Print the invite url of your bot
         System.out.println("You can invite the bot by using the following url: "
