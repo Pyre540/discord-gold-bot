@@ -28,7 +28,8 @@ public class HelpCommand implements MessageCreateListener {
                 .addInlineField("!help", "Wy\u015Bwietla list\u0119 dost\u0119pnych komend.")
                 .addInlineField("!status", "Wy\u015Bwietla status GoldBota.")
                 .addInlineField("!countGold", "Przelicza na nowo ca\u0142e z\u0142oto na podstawie ca\u0142ej " +
-                        "historii wszystkich kana\u0142\u00F3w tekstowych. To troch\u0119 zajmie...");
+                        "historii wszystkich kana\u0142\u00F3w tekstowych. To troch\u0119 zajmie...")
+                .addInlineField("!ranking", "Wy\u015Bwietla aktualny ranking.");
         embed.setAuthor(author.join());
         event.getChannel().sendMessage(embed);
     }

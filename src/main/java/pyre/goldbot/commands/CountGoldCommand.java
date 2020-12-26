@@ -1,16 +1,19 @@
 package pyre.goldbot.commands;
 
+import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;
-import org.javacord.api.entity.emoji.KnownCustomEmoji;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import pyre.goldbot.GoldManager;
+import pyre.goldbot.operation.CountGoldFinishedOperation;
+import pyre.goldbot.operation.CountGoldOperation;
+import pyre.goldbot.operation.Operation;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class CountGoldCommand implements MessageCreateListener {
 
@@ -22,28 +25,24 @@ public class CountGoldCommand implements MessageCreateListener {
         if (!event.getMessageContent().equalsIgnoreCase("!countGold")) {
             return;
         }
-        event.getApi().getThreadPool().getExecutorService().execute(() -> countGold(event));
+        countGold(event);
     }
 
     private void countGold(MessageCreateEvent event) {
         Message msg = event.getChannel().sendMessage("Przeliczam z\u0142oto...").join();
-        KnownCustomEmoji goldEmoji = event.getApi().getCustomEmojiById(769253894517555240L).orElse(null);
-        Collection<ServerTextChannel> textChannels = event.getApi().getServerTextChannels();
-        Map<String, Integer> usersGold = new HashMap<>();
+        DiscordApi api = event.getApi();
+        Collection<ServerTextChannel> textChannels = api.getServerTextChannels();
         int i = 1;
-        for (ServerTextChannel channel : textChannels) {
-            msg.edit(String.format("Przeliczam z\u0142oto [%d/%d]...", i, textChannels.size()));
-            List<Message> goldMessages = channel.getMessagesAsStream()
-                    .filter(m -> m.getReactionByEmoji(goldEmoji).isPresent())
-                    .collect(Collectors.toList());
-            for (Message message : goldMessages) {
-                message.getReactionByEmoji(goldEmoji).ifPresent(r -> {
-                    Integer j = usersGold.computeIfAbsent(message.getAuthor().getName(), a -> 0);
-                    usersGold.put(message.getAuthor().getName(), j + r.getCount());
-                });
-            }
+        List<Operation> operations = new ArrayList<>();
+        for (ServerTextChannel textChannel : textChannels) {
+            operations.add(new CountGoldOperation(api, textChannel.getIdAsString(),
+                    event.getMessage().getCreationTimestamp(), i, textChannels.size(), msg));
             i++;
         }
-        msg.edit("Przeliczanie z\u0142ota zako\u0144czone! " + usersGold);
+        operations.add(new CountGoldFinishedOperation(null, "-1", Instant.MAX, msg));
+        int addedOps = GoldManager.getInstance().addOperations(operations);
+        if (addedOps == 0) {
+            msg.edit("Przeliczanie jest ju\u017C w toku. Spokojnie...");
+        }
     }
 }
