@@ -6,7 +6,7 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.Message;
 import pyre.goldbot.GoldBot;
-import pyre.goldbot.GoldManager;
+import pyre.goldbot.entity.GoldCollector;
 
 import java.time.Instant;
 import java.util.List;
@@ -30,7 +30,7 @@ public class CountGoldOperation extends Operation {
     }
 
     @Override
-    public void execute(Map<String, GoldManager.GoldCollector> goldCollectors) {
+    public void execute(Map<String, GoldCollector> goldCollectors) {
         ServerTextChannel textChannel = api.getServerTextChannelById(channelId).orElse(null);
         if (textChannel == null) {
             logger.error("Text channel {} does not exist!", channelId);
@@ -42,8 +42,8 @@ public class CountGoldOperation extends Operation {
                 .collect(Collectors.toList());
         for (Message msg : goldMessages) {
             msg.getReactionByEmoji(GoldBot.GOLD_EMOJI).ifPresent(r -> {
-                GoldManager.GoldCollector goldCollector =
-                        goldCollectors.computeIfAbsent(msg.getAuthor().getIdAsString(), GoldManager.GoldCollector::new);
+                GoldCollector goldCollector =
+                        goldCollectors.computeIfAbsent(msg.getAuthor().getIdAsString(), GoldCollector::new);
                 goldCollector.modifyScore(r.getCount());
             });
         }

@@ -1,7 +1,7 @@
 package pyre.goldbot.operation;
 
 import org.javacord.api.DiscordApi;
-import pyre.goldbot.GoldManager;
+import pyre.goldbot.entity.GoldCollector;
 
 import java.time.Instant;
 import java.util.Map;
@@ -18,7 +18,7 @@ public abstract class Operation {
         this.msgTimestamp = msgTimestamp;
     }
 
-    public abstract void execute(Map<String, GoldManager.GoldCollector> goldCollectors);
+    public abstract void execute(Map<String, GoldCollector> goldCollectors);
 
     public String getChannelId() {
         return channelId;

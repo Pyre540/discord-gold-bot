@@ -5,6 +5,7 @@ import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import pyre.goldbot.GoldManager;
+import pyre.goldbot.entity.GoldCollector;
 
 import java.util.List;
 import java.util.SortedMap;
@@ -20,7 +21,7 @@ public class RankingCommand implements MessageCreateListener {
         if (!event.getMessageContent().equalsIgnoreCase("!ranking")) {
             return;
         }
-        SortedMap<Integer, List<GoldManager.GoldCollector>> ranking = GoldManager.getInstance().getRanking();
+        SortedMap<Integer, List<GoldCollector>> ranking = GoldManager.getInstance().getRanking();
         DiscordApi api = event.getApi();
         String rankingEntries = ranking.entrySet().stream()
                 .map(e -> String.format("%d. %s(%d pkt.)", e.getKey(),

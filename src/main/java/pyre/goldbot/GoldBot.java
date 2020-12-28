@@ -43,6 +43,8 @@ public class GoldBot {
         api.addListener(new CountGoldCommand());
         api.addListener(new RankingCommand());
 
+        GoldManager.getInstance().initRanking(api);
+
         // Print the invite url of your bot
         System.out.println("You can invite the bot by using the following url: "
                 + api.createBotInvite(Permissions.fromBitmask(402721792)));

@@ -2,6 +2,10 @@ package pyre.goldbot;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.channel.ServerTextChannel;
+import org.javacord.api.entity.message.Message;
+import pyre.goldbot.entity.GoldCollector;
 import pyre.goldbot.operation.CountGoldFinishedOperation;
 import pyre.goldbot.operation.CountGoldOperation;
 import pyre.goldbot.operation.Operation;
@@ -12,6 +16,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class GoldManager {
 
@@ -53,6 +58,23 @@ public class GoldManager {
         return INSTANCE;
     }
 
+    public synchronized void initRanking(DiscordApi api) {
+        Collection<ServerTextChannel> textChannels = api.getServerTextChannels();
+        for (ServerTextChannel textChannel : textChannels) {
+            List<Message> goldMessages = textChannel.getMessagesAsStream()
+                    .filter(m -> m.getReactionByEmoji(GoldBot.GOLD_EMOJI).isPresent())
+                    .collect(Collectors.toList());
+            for (Message msg : goldMessages) {
+                msg.getReactionByEmoji(GoldBot.GOLD_EMOJI).ifPresent(r -> {
+                    GoldCollector goldCollector =
+                            goldCollectors.computeIfAbsent(msg.getAuthor().getIdAsString(), GoldCollector::new);
+                    goldCollector.modifyScore(r.getCount());
+                });
+            }
+        }
+        updateRanking();
+    }
+
     public synchronized int addOperations(List<Operation> operations) {
         int opsAdded = 0;
         for (Operation operation : operations) {
@@ -82,70 +104,20 @@ public class GoldManager {
 
     private void updateRanking() {
         ranking.clear();
-        goldCollectors.values().stream().sorted(Comparator.reverseOrder()).forEach( item -> {
-            Integer score = item.getScore();
-            if(ranking.isEmpty()){
-                ranking.put(1, new ArrayList<>());
-            }else{
-                Integer rank = ranking.lastKey();
-                List<GoldCollector> items = ranking.get(rank);
-                if(!score.equals(items.get(0).getScore())) {
-                    ranking.put(rank+items.size(), new ArrayList<>());
-                }
-            }
-            ranking.get(ranking.lastKey()).add(item);
-        });
-    }
-
-    public static class GoldCollector implements Comparable<GoldCollector> {
-        private String userId;
-        private int score;
-
-        public GoldCollector(String userId) {
-            this.userId = userId;
-            this.score = 0;
-        }
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public int getScore() {
-            return score;
-        }
-
-        public void setScore(int score) {
-            this.score = score;
-        }
-
-        public void modifyScore(int count) {
-            this.score+=count;
-        }
-
-        public void increaseScore() {
-            this.score++;
-        }
-
-        public void decreaseScore() {
-            this.score--;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            GoldCollector that = (GoldCollector) o;
-            return score == that.score && userId.equals(that.userId);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(userId, score);
-        }
-
-        @Override
-        public int compareTo(GoldCollector o) {
-            return getScore() - o.getScore();
-        }
+        goldCollectors.values().stream()
+                .sorted(Comparator.reverseOrder())
+                .forEach(item -> {
+                    Integer score = item.getScore();
+                    if (ranking.isEmpty()) {
+                        ranking.put(1, new ArrayList<>());
+                    } else {
+                        Integer rank = ranking.lastKey();
+                        List<GoldCollector> items = ranking.get(rank);
+                        if (!score.equals(items.get(0).getScore())) {
+                            ranking.put(rank + items.size(), new ArrayList<>());
+                        }
+                    }
+                    ranking.get(ranking.lastKey()).add(item);
+                });
     }
 }

@@ -10,7 +10,6 @@ import pyre.goldbot.operation.CountGoldFinishedOperation;
 import pyre.goldbot.operation.CountGoldOperation;
 import pyre.goldbot.operation.Operation;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -39,7 +38,7 @@ public class CountGoldCommand implements MessageCreateListener {
                     event.getMessage().getCreationTimestamp(), i, textChannels.size(), msg));
             i++;
         }
-        operations.add(new CountGoldFinishedOperation(null, "-1", Instant.MAX, msg));
+        operations.add(new CountGoldFinishedOperation(msg));
         int addedOps = GoldManager.getInstance().addOperations(operations);
         if (addedOps == 0) {
             msg.edit("Przeliczanie jest ju\u017C w toku. Spokojnie...");
