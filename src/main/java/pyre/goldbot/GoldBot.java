@@ -5,12 +5,15 @@ import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.emoji.KnownCustomEmoji;
+import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.entity.permission.Permissions;
 import org.javacord.api.entity.user.UserStatus;
 import pyre.goldbot.commands.CountGoldCommand;
 import pyre.goldbot.commands.HelpCommand;
 import pyre.goldbot.commands.RankingCommand;
 import pyre.goldbot.commands.StatusCommand;
+import pyre.goldbot.listeners.AddGoldReactionListener;
+import pyre.goldbot.listeners.RemoveGoldReactionListener;
 
 public class GoldBot {
 
@@ -42,6 +45,8 @@ public class GoldBot {
         api.addListener(new StatusCommand());
         api.addListener(new CountGoldCommand());
         api.addListener(new RankingCommand());
+        api.addListener(new AddGoldReactionListener());
+        api.addListener(new RemoveGoldReactionListener());
 
         GoldManager.getInstance().initRanking(api);
 
