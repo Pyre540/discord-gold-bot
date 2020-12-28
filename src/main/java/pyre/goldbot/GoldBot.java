@@ -30,6 +30,7 @@ public class GoldBot {
 
         DiscordApi api = new DiscordApiBuilder()
                 .setToken(token)
+                .setAllIntentsExcept(Intent.GUILD_PRESENCES)
                 .login()
                 .join();
         api.updateStatus(UserStatus.INVISIBLE);
