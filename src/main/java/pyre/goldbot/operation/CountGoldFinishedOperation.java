@@ -1,6 +1,7 @@
 package pyre.goldbot.operation;
 
 import org.javacord.api.entity.message.Message;
+import pyre.goldbot.GoldBot;
 import pyre.goldbot.entity.GoldCollector;
 
 import java.time.Instant;
@@ -17,7 +18,6 @@ public class CountGoldFinishedOperation extends Operation {
 
     @Override
     public void execute(Map<String, GoldCollector> goldCollectors) {
-        message.edit("Przeliczanie z\u0142ota zako\u0144czone! Aby zobaczy\u0107 aktualny ranking u\u017Cyj komendy" +
-                " !ranking.");
+        message.edit(GoldBot.getMessages().getString("countGold.finished"));
     }
 }

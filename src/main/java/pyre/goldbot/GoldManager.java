@@ -140,7 +140,7 @@ public class GoldManager {
     private void announceNewLeaders() {
         String msg;
         if (rankingLeaders.isEmpty() || rankingLeaders.get(0).getScore() == 0) {
-            msg = String.format("%s Panuje bezkr\u00F3lewie! No nie mo\u017Cna tak tego zostawi\u0107...", CROWN);
+            msg = String.format(GoldBot.getMessages().getString("announcement.noLeaders"), CROWN);
         } else {
             DiscordApi api = GoldBot.getApi();
             Server server = api.getServers().iterator().next();
@@ -148,10 +148,9 @@ public class GoldManager {
                     .map(l -> api.getUserById(l.getUserId()).join().getDisplayName(server))
                     .collect(Collectors.joining(", "));
             if (rankingLeaders.size() > 1) {
-                msg = String.format("%s Pojedynek na szczycie! %s walcz\u0105 o tron!", CROWN, leaders);
+                msg = String.format(GoldBot.getMessages().getString("announcement.multipleLeaders"), CROWN, leaders);
             } else {
-                msg = String.format("%s Panie i Panowie! Oto nowy, niepodzielnie panuj\u0105cy, z\u0142oty kr\u00F3l " +
-                        "contentu i mem\u00F3w: %s!", CROWN, leaders);
+                msg = String.format(GoldBot.getMessages().getString("announcement.singleLeader"), CROWN, leaders);
             }
         }
         new MessageBuilder().append(msg).send(GoldBot.getMainChannel());

@@ -36,7 +36,7 @@ public class CountGoldOperation extends Operation {
             logger.error("Text channel {} does not exist!", channelId);
             return;
         }
-        message.edit(String.format("Przeliczam z\u0142oto [%d/%d]...", id, totalOperations));
+        message.edit(String.format(GoldBot.getMessages().getString("countGold.step"), id, totalOperations));
         List<Message> goldMessages = textChannel.getMessagesBeforeAsStream(message)
                 .filter(m -> m.getReactionByEmoji(GoldBot.getGoldEmoji()).isPresent())
                 .collect(Collectors.toList());

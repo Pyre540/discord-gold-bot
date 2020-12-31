@@ -5,6 +5,7 @@ import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import pyre.goldbot.GoldBot;
 import pyre.goldbot.GoldManager;
 import pyre.goldbot.operation.CountGoldFinishedOperation;
 import pyre.goldbot.operation.CountGoldOperation;
@@ -28,7 +29,7 @@ public class CountGoldCommand implements MessageCreateListener {
     }
 
     private void countGold(MessageCreateEvent event) {
-        Message msg = event.getChannel().sendMessage("Przeliczam z\u0142oto...").join();
+        Message msg = event.getChannel().sendMessage(GoldBot.getMessages().getString("countGold.counting")).join();
         DiscordApi api = event.getApi();
         Collection<ServerTextChannel> textChannels = api.getServerTextChannels();
         int i = 1;
@@ -41,7 +42,7 @@ public class CountGoldCommand implements MessageCreateListener {
         operations.add(new CountGoldFinishedOperation(msg));
         int addedOps = GoldManager.getInstance().addOperations(operations);
         if (addedOps == 0) {
-            msg.edit("Przeliczanie jest ju\u017C w toku. Spokojnie...");
+            msg.edit(GoldBot.getMessages().getString("countGold.alreadyRunning"));
         }
     }
 }

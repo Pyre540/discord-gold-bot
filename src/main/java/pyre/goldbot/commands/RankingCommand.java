@@ -4,6 +4,7 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import pyre.goldbot.GoldBot;
 import pyre.goldbot.GoldManager;
 import pyre.goldbot.entity.GoldCollector;
 
@@ -29,8 +30,9 @@ public class RankingCommand implements MessageCreateListener {
                         e.getValue().get(0).getScore()))
                 .collect(Collectors.joining("\n"));
         new MessageBuilder()
-                .append("Aktualny ranking:")
-                .appendCode("java", rankingEntries.isEmpty() ? "Brak rezultat\u00F3w :O" : rankingEntries)
+                .append(GoldBot.getMessages().getString("ranking.message"))
+                .appendCode("java", rankingEntries.isEmpty() ? GoldBot.getMessages().getString("ranking.noRanking") :
+                        rankingEntries)
                 .send(event.getChannel());
     }
 

@@ -16,9 +16,14 @@ import pyre.goldbot.commands.StatusCommand;
 import pyre.goldbot.listeners.AddGoldReactionListener;
 import pyre.goldbot.listeners.RemoveGoldReactionListener;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 public class GoldBot {
 
     private static final Logger logger = LogManager.getLogger(GoldBot.class);
+
+    private static ResourceBundle messages;
 
     private static DiscordApi api;
     private static KnownCustomEmoji goldEmoji;
@@ -30,6 +35,9 @@ public class GoldBot {
             logger.error("No bot token");
             return;
         }
+
+        Locale locale = new Locale("pl", "PL");
+        messages = ResourceBundle.getBundle("Messages", locale);
 
         api = new DiscordApiBuilder()
                 .setToken(token)
@@ -64,6 +72,10 @@ public class GoldBot {
         // Print the invite url of your bot
         System.out.println("You can invite the bot by using the following url: "
                 + api.createBotInvite(Permissions.fromBitmask(402721792)));
+    }
+
+    public static ResourceBundle getMessages() {
+        return messages;
     }
 
     public static DiscordApi getApi() {
