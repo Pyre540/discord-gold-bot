@@ -21,11 +21,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static pyre.goldbot.GoldBot.CROWN;
+
 public class GoldManager {
 
     private static final Logger logger = LogManager.getLogger(GoldManager.class);
-
-    private static final String CROWN = "\uD83D\uDC51";
 
     private static final GoldManager INSTANCE = new GoldManager();
 
@@ -145,7 +145,10 @@ public class GoldManager {
             DiscordApi api = GoldBot.getApi();
             Server server = api.getServers().iterator().next();
             String leaders = rankingLeaders.stream()
-                    .map(l -> api.getUserById(l.getUserId()).join().getDisplayName(server))
+                    .map(l -> api.getUserById(l.getUserId()).join()
+                            .getDisplayName(server)
+                            .replaceAll(GoldBot.CROWN, "")
+                            .trim())
                     .collect(Collectors.joining(", "));
             if (rankingLeaders.size() > 1) {
                 msg = String.format(GoldBot.getMessages().getString("announcement.multipleLeaders"), CROWN, leaders);

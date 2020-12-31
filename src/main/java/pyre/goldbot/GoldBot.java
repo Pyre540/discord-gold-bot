@@ -18,6 +18,7 @@ import pyre.goldbot.listeners.RemoveGoldReactionListener;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -29,6 +30,10 @@ public class GoldBot {
     private static ResourceBundle messages;
 
     private static final Properties config = new Properties();
+
+    public static final LocalDateTime BOT_START = LocalDateTime.now();
+
+    public static final String CROWN = "\uD83D\uDC51";
 
     private static DiscordApi api;
     private static KnownCustomEmoji goldEmoji;
@@ -83,8 +88,8 @@ public class GoldBot {
         GoldManager.getInstance().initRanking();
 
         // Print the invite url of your bot
-        System.out.println("You can invite the bot by using the following url: "
-                + api.createBotInvite(Permissions.fromBitmask(402721792)));
+        logger.info("You can invite the bot by using the following url: {}",
+                api.createBotInvite(Permissions.fromBitmask(402721792)));
     }
 
     public static ResourceBundle getMessages() {

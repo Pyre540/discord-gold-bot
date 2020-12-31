@@ -26,7 +26,11 @@ public class RankingCommand implements MessageCreateListener {
         DiscordApi api = event.getApi();
         String rankingEntries = ranking.entrySet().stream()
                 .map(e -> String.format("%d. %s(%d pkt.)", e.getKey(),
-                        e.getValue().stream().map(v -> getUserDisplayName(api, v.getUserId())).collect(Collectors.joining(", ")),
+                        e.getValue().stream()
+                                .map(v -> getUserDisplayName(api, v.getUserId()))
+                                .collect(Collectors.joining(", "))
+                                .replaceAll(GoldBot.CROWN, "")
+                                .trim(),
                         e.getValue().get(0).getScore()))
                 .collect(Collectors.joining("\n"));
         new MessageBuilder()
