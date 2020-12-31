@@ -16,7 +16,10 @@ import pyre.goldbot.commands.StatusCommand;
 import pyre.goldbot.listeners.AddGoldReactionListener;
 import pyre.goldbot.listeners.RemoveGoldReactionListener;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.ResourceBundle;
 
 public class GoldBot {
@@ -25,11 +28,13 @@ public class GoldBot {
 
     private static ResourceBundle messages;
 
+    private static final Properties config = new Properties();
+
     private static DiscordApi api;
     private static KnownCustomEmoji goldEmoji;
     private static TextChannel mainChannel;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         String token = System.getenv("token");
         if (token == null || token.isEmpty()) {
             logger.error("No bot token");
@@ -39,6 +44,14 @@ public class GoldBot {
         Locale locale = new Locale("pl", "PL");
         messages = ResourceBundle.getBundle("Messages", locale);
 
+        try (InputStream input = GoldBot.class.getClassLoader().getResourceAsStream("config.properties")) {
+            if (input == null) {
+                logger.error("Unable to find config.properties");
+                return;
+            }
+            config.load(input);
+        }
+
         api = new DiscordApiBuilder()
                 .setToken(token)
                 .setAllIntentsExcept(Intent.GUILD_PRESENCES)
@@ -46,14 +59,14 @@ public class GoldBot {
                 .join();
         api.updateStatus(UserStatus.INVISIBLE);
 
-        goldEmoji = api.getCustomEmojiById(769253894517555240L).orElse(null);
+        goldEmoji = api.getCustomEmojiById(config.getProperty("goldEmojiId")).orElse(null);
         if (goldEmoji == null) {
             logger.error("Cannot load gold emoji");
             api.disconnect();
             return;
         }
 
-        mainChannel = api.getTextChannelById(792049029679808534L).orElse(null); //todo change id
+        mainChannel = api.getTextChannelById(config.getProperty("mainChannelId")).orElse(null); //todo change id
         if (mainChannel == null) {
             logger.error("Cannot load main text channel");
             api.disconnect();
