@@ -38,10 +38,10 @@ public class CountGoldOperation extends Operation {
         }
         message.edit(String.format("Przeliczam z\u0142oto [%d/%d]...", id, totalOperations));
         List<Message> goldMessages = textChannel.getMessagesBeforeAsStream(message)
-                .filter(m -> m.getReactionByEmoji(GoldBot.GOLD_EMOJI).isPresent())
+                .filter(m -> m.getReactionByEmoji(GoldBot.getGoldEmoji()).isPresent())
                 .collect(Collectors.toList());
         for (Message msg : goldMessages) {
-            msg.getReactionByEmoji(GoldBot.GOLD_EMOJI).ifPresent(r -> {
+            msg.getReactionByEmoji(GoldBot.getGoldEmoji()).ifPresent(r -> {
                 GoldCollector goldCollector =
                         goldCollectors.computeIfAbsent(msg.getAuthor().getIdAsString(), GoldCollector::new);
                 goldCollector.modifyScore(r.getCount());

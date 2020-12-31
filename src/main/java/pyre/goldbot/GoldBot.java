@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
+import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.emoji.KnownCustomEmoji;
 import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.entity.permission.Permissions;
@@ -19,7 +20,9 @@ public class GoldBot {
 
     private static final Logger logger = LogManager.getLogger(GoldBot.class);
 
-    public static KnownCustomEmoji GOLD_EMOJI;
+    private static DiscordApi api;
+    private static KnownCustomEmoji goldEmoji;
+    private static TextChannel mainChannel;
 
     public static void main(String[] args) {
         String token = System.getenv("token");
@@ -28,16 +31,23 @@ public class GoldBot {
             return;
         }
 
-        DiscordApi api = new DiscordApiBuilder()
+        api = new DiscordApiBuilder()
                 .setToken(token)
                 .setAllIntentsExcept(Intent.GUILD_PRESENCES)
                 .login()
                 .join();
         api.updateStatus(UserStatus.INVISIBLE);
 
-        GOLD_EMOJI = api.getCustomEmojiById(769253894517555240L).orElse(null);
-        if (GOLD_EMOJI == null) {
+        goldEmoji = api.getCustomEmojiById(769253894517555240L).orElse(null);
+        if (goldEmoji == null) {
             logger.error("Cannot load gold emoji");
+            api.disconnect();
+            return;
+        }
+
+        mainChannel = api.getTextChannelById(792049029679808534L).orElse(null); //todo change id
+        if (mainChannel == null) {
+            logger.error("Cannot load main text channel");
             api.disconnect();
             return;
         }
@@ -49,10 +59,22 @@ public class GoldBot {
         api.addListener(new AddGoldReactionListener());
         api.addListener(new RemoveGoldReactionListener());
 
-        GoldManager.getInstance().initRanking(api);
+        GoldManager.getInstance().initRanking();
 
         // Print the invite url of your bot
         System.out.println("You can invite the bot by using the following url: "
                 + api.createBotInvite(Permissions.fromBitmask(402721792)));
+    }
+
+    public static DiscordApi getApi() {
+        return api;
+    }
+
+    public static KnownCustomEmoji getGoldEmoji() {
+        return goldEmoji;
+    }
+
+    public static TextChannel getMainChannel() {
+        return mainChannel;
     }
 }

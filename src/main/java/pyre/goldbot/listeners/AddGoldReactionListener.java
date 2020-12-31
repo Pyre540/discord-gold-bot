@@ -17,10 +17,10 @@ public class AddGoldReactionListener implements ReactionAddListener {
 
     @Override
     public void onReactionAdd(ReactionAddEvent event) {
-        if (!event.getEmoji().equalsEmoji(GoldBot.GOLD_EMOJI)) {
+        if (!event.getEmoji().equalsEmoji(GoldBot.getGoldEmoji())) {
             return;
         }
-        Message message = event.getMessage().orElse(null);
+        Message message = event.getApi().getMessageById(event.getMessageId(), event.getChannel()).join();
         if (message == null) {
             logger.error("Cannot add gold. Message {} does not exist!", event.getMessageId());
             return;
