@@ -26,7 +26,7 @@ public class RemoveGoldReactionListener implements ReactionRemoveListener {
             return;
         }
         RemoveGoldOperation removeGoldOperation = new RemoveGoldOperation(event.getApi(), event.getChannel().getIdAsString(),
-                message.getCreationTimestamp(), message.getAuthor().getIdAsString());
+                message.getCreationTimestamp(), message.getAuthor().getIdAsString(), message);
         GoldManager.getInstance().addOperations(Arrays.asList(removeGoldOperation));
     }
 }

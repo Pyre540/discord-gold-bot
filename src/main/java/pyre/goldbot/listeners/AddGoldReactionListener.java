@@ -26,7 +26,7 @@ public class AddGoldReactionListener implements ReactionAddListener {
             return;
         }
         AddGoldOperation addGoldOperation = new AddGoldOperation(event.getApi(), event.getChannel().getIdAsString(),
-                message.getCreationTimestamp(), message.getAuthor().getIdAsString());
+                message.getCreationTimestamp(), message.getAuthor().getIdAsString(), message.getLink());
         GoldManager.getInstance().addOperations(Arrays.asList(addGoldOperation));
     }
 }

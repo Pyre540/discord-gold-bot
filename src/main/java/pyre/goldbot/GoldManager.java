@@ -75,6 +75,7 @@ public class GoldManager {
                 msg.getReactionByEmoji(GoldBot.getGoldEmoji()).ifPresent(r -> {
                     GoldCollector goldCollector =
                             goldCollectors.computeIfAbsent(msg.getAuthor().getIdAsString(), GoldCollector::new);
+                    goldCollector.getGoldMessages().add(msg.getLink());
                     goldCollector.modifyScore(r.getCount());
                 });
             }
@@ -107,6 +108,10 @@ public class GoldManager {
 
     public synchronized SortedMap<Integer, List<GoldCollector>> getRanking() {
         return new TreeMap<>(ranking);
+    }
+
+    public synchronized Map<String, GoldCollector> getGoldCollectors() {
+        return new HashMap<>(goldCollectors);
     }
 
     private void updateRanking() {
@@ -147,7 +152,7 @@ public class GoldManager {
             String leaders = rankingLeaders.stream()
                     .map(l -> api.getUserById(l.getUserId()).join()
                             .getDisplayName(server)
-                            .replaceAll(GoldBot.CROWN, "")
+                            .replace(GoldBot.CROWN, "")
                             .trim())
                     .collect(Collectors.joining(", "));
             if (rankingLeaders.size() > 1) {
@@ -167,6 +172,9 @@ public class GoldManager {
                 .map(GoldCollector::getUserId)
                 .collect(Collectors.toList());
         for (User member : members) {
+            if (server.getOwnerId() == member.getId()) {
+                continue;
+            }
             String displayName = member.getDisplayName(server);
             if (leaders.contains(member.getIdAsString()) && !displayName.endsWith(CROWN)) {
                 member.updateNickname(server, displayName + " " + CROWN).join();

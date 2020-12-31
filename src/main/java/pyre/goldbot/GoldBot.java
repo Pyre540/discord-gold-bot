@@ -9,10 +9,7 @@ import org.javacord.api.entity.emoji.KnownCustomEmoji;
 import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.entity.permission.Permissions;
 import org.javacord.api.entity.user.UserStatus;
-import pyre.goldbot.commands.CountGoldCommand;
-import pyre.goldbot.commands.HelpCommand;
-import pyre.goldbot.commands.RankingCommand;
-import pyre.goldbot.commands.StatusCommand;
+import pyre.goldbot.commands.*;
 import pyre.goldbot.listeners.AddGoldReactionListener;
 import pyre.goldbot.listeners.RemoveGoldReactionListener;
 
@@ -82,6 +79,7 @@ public class GoldBot {
         api.addListener(new StatusCommand());
         api.addListener(new CountGoldCommand());
         api.addListener(new RankingCommand());
+        api.addListener(new UsersGoldCommand());
         api.addListener(new AddGoldReactionListener());
         api.addListener(new RemoveGoldReactionListener());
 

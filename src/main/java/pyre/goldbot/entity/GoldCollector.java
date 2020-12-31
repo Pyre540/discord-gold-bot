@@ -1,14 +1,19 @@
 package pyre.goldbot.entity;
 
+import java.net.URL;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public class GoldCollector implements Comparable<GoldCollector> {
     private String userId;
     private int score;
+    private Set<URL> goldMessages;
 
     public GoldCollector(String userId) {
         this.userId = userId;
         this.score = 0;
+        this.goldMessages = new LinkedHashSet<>();
     }
 
     public String getUserId() {
@@ -33,6 +38,10 @@ public class GoldCollector implements Comparable<GoldCollector> {
 
     public void decreaseScore() {
         this.score--;
+    }
+
+    public Set<URL> getGoldMessages() {
+        return goldMessages;
     }
 
     @Override
