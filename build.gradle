@@ -1,4 +1,5 @@
 plugins {
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
     id 'java'
 }
 
@@ -16,3 +17,11 @@ dependencies {
     implementation 'org.javacord:javacord:3.1.2'
     implementation 'org.apache.logging.log4j:log4j-core:2.11.0'
 }
+
+shadowJar {
+    manifest {
+        attributes 'Main-Class': 'pyre.goldbot.GoldBot'
+    }
+}
+
+task stage(dependsOn: ['shadowJar'])
