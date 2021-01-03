@@ -29,7 +29,7 @@ public class GoldCollector implements Comparable<GoldCollector> {
     }
 
     public void modifyScore(int count) {
-        this.score+=count;
+        this.score += count;
     }
 
     public void increaseScore() {

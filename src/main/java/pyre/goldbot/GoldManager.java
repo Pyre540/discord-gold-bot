@@ -9,7 +9,6 @@ import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import pyre.goldbot.entity.GoldCollector;
-import pyre.goldbot.operation.CountGoldFinishedOperation;
 import pyre.goldbot.operation.CountGoldOperation;
 import pyre.goldbot.operation.Operation;
 
@@ -39,7 +38,7 @@ public class GoldManager {
 
     private Predicate<Operation> channelAbsent = o -> !channelsToCount.containsKey(o.getChannelId());
     private Predicate<Operation> simpleOperationAfter = o -> !(o instanceof CountGoldOperation)
-            && channelsToCount.get(o.getChannelId()).isBefore(o.getMsgTimestamp());
+                    && channelsToCount.get(o.getChannelId()).isBefore(o.getMsgTimestamp());
 
     private GoldManager() {
         new Thread(() -> {
@@ -51,7 +50,9 @@ public class GoldManager {
                         if (operation instanceof CountGoldOperation) {
                             channelsToCount.remove(operation.getChannelId());
                         }
-                        updateRanking();
+                        if (channelsToCount.isEmpty()) {
+                            updateRanking();
+                        }
                     }
                 }
             } catch (InterruptedException e) {
@@ -83,24 +84,22 @@ public class GoldManager {
         updateRanking();
     }
 
-    public synchronized int addOperations(List<Operation> operations) {
-        int opsAdded = 0;
+    public synchronized boolean addOperations(List<Operation> operations) {
+        boolean opsAdded = false;
+        if (!operations.stream().allMatch(channelAbsent.or(simpleOperationAfter))) {
+            return false;
+        }
         for (Operation operation : operations) {
-            if (channelAbsent.or(simpleOperationAfter).test(operation)) {
-                if (operation instanceof CountGoldOperation) {
-                    channelsToCount.put(operation.getChannelId(), operation.getMsgTimestamp());
-                }
-                if (opsAdded == 0 && operation instanceof CountGoldFinishedOperation) {
-                    return 0;
-                }
-                try {
-                    operationQueue.put(operation);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    logger.warn("Failed to add operation: {}", operation);
-                    return opsAdded;
-                }
-                opsAdded++;
+            if (operation instanceof CountGoldOperation) {
+                channelsToCount.put(operation.getChannelId(), operation.getMsgTimestamp());
+            }
+            try {
+                operationQueue.put(operation);
+                opsAdded = true;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.warn("Failed to add operation: {}", operation);
+                return opsAdded;
             }
         }
         return opsAdded;

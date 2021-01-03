@@ -9,6 +9,7 @@ import pyre.goldbot.GoldBot;
 import pyre.goldbot.GoldManager;
 import pyre.goldbot.operation.CountGoldFinishedOperation;
 import pyre.goldbot.operation.CountGoldOperation;
+import pyre.goldbot.operation.CountGoldStartOperation;
 import pyre.goldbot.operation.Operation;
 
 import java.util.ArrayList;
@@ -34,14 +35,15 @@ public class CountGoldCommand implements MessageCreateListener {
         Collection<ServerTextChannel> textChannels = api.getServerTextChannels();
         int i = 1;
         List<Operation> operations = new ArrayList<>();
+        operations.add(new CountGoldStartOperation());
         for (ServerTextChannel textChannel : textChannels) {
             operations.add(new CountGoldOperation(api, textChannel.getIdAsString(),
                     event.getMessage().getCreationTimestamp(), i, textChannels.size(), msg));
             i++;
         }
         operations.add(new CountGoldFinishedOperation(msg));
-        int addedOps = GoldManager.getInstance().addOperations(operations);
-        if (addedOps == 0) {
+        boolean addedOps = GoldManager.getInstance().addOperations(operations);
+        if (!addedOps) {
             msg.edit(GoldBot.getMessages().getString("countGold.alreadyRunning"));
         }
     }
