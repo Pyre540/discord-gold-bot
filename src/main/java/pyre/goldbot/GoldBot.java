@@ -10,6 +10,7 @@ import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.entity.permission.Permissions;
 import org.javacord.api.entity.user.UserStatus;
 import pyre.goldbot.commands.*;
+import pyre.goldbot.db.GoldDao;
 import pyre.goldbot.listeners.AddGoldReactionListener;
 import pyre.goldbot.listeners.RemoveGoldReactionListener;
 
@@ -40,6 +41,10 @@ public class GoldBot {
         String token = System.getenv("token");
         if (token == null || token.isEmpty()) {
             logger.error("No bot token");
+            return;
+        }
+
+        if (!GoldDao.init()) {
             return;
         }
 
@@ -83,7 +88,7 @@ public class GoldBot {
         api.addListener(new AddGoldReactionListener());
         api.addListener(new RemoveGoldReactionListener());
 
-        GoldManager.getInstance().initRanking();
+//        GoldManager.getInstance().initRanking();
 
         // Print the invite url of your bot
         logger.info("You can invite the bot by using the following url: {}",
