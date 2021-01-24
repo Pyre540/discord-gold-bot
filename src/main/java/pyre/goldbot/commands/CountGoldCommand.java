@@ -30,21 +30,20 @@ public class CountGoldCommand implements MessageCreateListener {
     }
 
     private void countGold(MessageCreateEvent event) {
-        Message msg = event.getChannel().sendMessage(GoldBot.getMessages().getString("countGold.counting")).join();
+        Message msg = event.getChannel().sendMessage(GoldBot.getMessage("countGold.counting")).join();
         DiscordApi api = event.getApi();
         Collection<ServerTextChannel> textChannels = api.getServerTextChannels();
         int i = 1;
         List<Operation> operations = new ArrayList<>();
         operations.add(new CountGoldStartOperation());
         for (ServerTextChannel textChannel : textChannels) {
-            operations.add(new CountGoldOperation(api, textChannel.getIdAsString(),
-                    event.getMessage().getCreationTimestamp(), i, textChannels.size(), msg));
+            operations.add(new CountGoldOperation(api, textChannel.getIdAsString(), i, textChannels.size(), msg));
             i++;
         }
         operations.add(new CountGoldFinishedOperation(msg));
         boolean addedOps = GoldManager.getInstance().addOperations(operations);
         if (!addedOps) {
-            msg.edit(GoldBot.getMessages().getString("countGold.alreadyRunning"));
+            msg.edit(GoldBot.getMessage("countGold.alreadyRunning"));
         }
     }
 }

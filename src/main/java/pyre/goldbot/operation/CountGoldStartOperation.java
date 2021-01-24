@@ -1,20 +1,23 @@
 package pyre.goldbot.operation;
 
-import pyre.goldbot.entity.GoldCollector;
+import pyre.goldbot.db.GoldDao;
+import pyre.goldbot.db.entity.GoldCollector;
 
-import java.time.Instant;
-import java.util.Map;
+import java.util.List;
 
 public class CountGoldStartOperation extends Operation {
 
     public CountGoldStartOperation() {
-        super(null, "-1", Instant.MAX);
+        super(null, "-1", null);
     }
 
     @Override
-    public void execute(Map<String, GoldCollector> goldCollectors) {
-        for (GoldCollector goldCollector : goldCollectors.values()) {
-            goldCollector.setScore(0);
+    public void execute() {
+        List<GoldCollector> goldCollectors = GoldDao.getInstance().getGoldCollectorsWithMessages();
+        for (GoldCollector goldCollector : goldCollectors) {
+            goldCollector.setGoldCount(0);
+            goldCollector.getGoldMessages().clear();
         }
+        GoldDao.getInstance().saveOrUpdate(goldCollectors);
     }
 }

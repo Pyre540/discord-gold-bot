@@ -1,30 +1,29 @@
 package pyre.goldbot.operation;
 
 import org.javacord.api.DiscordApi;
-import pyre.goldbot.entity.GoldCollector;
+import org.javacord.api.entity.message.Message;
 
 import java.time.Instant;
-import java.util.Map;
 
 public abstract class Operation {
 
     protected DiscordApi api;
     protected String channelId;
-    protected Instant msgTimestamp;
+    protected Message message;
 
-    public Operation(DiscordApi api, String channelId, Instant msgTimestamp) {
+    public Operation(DiscordApi api, String channelId, Message message) {
         this.api = api;
         this.channelId = channelId;
-        this.msgTimestamp = msgTimestamp;
+        this.message = message;
     }
 
-    public abstract void execute(Map<String, GoldCollector> goldCollectors);
+    public abstract void execute();
 
     public String getChannelId() {
         return channelId;
     }
 
     public Instant getMsgTimestamp() {
-        return msgTimestamp;
+        return message != null ? message.getCreationTimestamp() : Instant.MAX;
     }
 }

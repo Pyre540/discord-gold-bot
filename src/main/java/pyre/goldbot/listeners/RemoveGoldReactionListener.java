@@ -25,8 +25,8 @@ public class RemoveGoldReactionListener implements ReactionRemoveListener {
             logger.error("Cannot remove gold. Message {} does not exist!", event.getMessageId());
             return;
         }
-        RemoveGoldOperation removeGoldOperation = new RemoveGoldOperation(event.getApi(), event.getChannel().getIdAsString(),
-                message.getCreationTimestamp(), message.getAuthor().getIdAsString(), message);
+        RemoveGoldOperation removeGoldOperation = new RemoveGoldOperation(event.getApi(),
+                event.getChannel().getIdAsString(), message.getAuthor().getIdAsString(), message);
         GoldManager.getInstance().addOperations(Arrays.asList(removeGoldOperation));
     }
 }

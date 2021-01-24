@@ -10,7 +10,6 @@ import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.entity.permission.Permissions;
 import org.javacord.api.entity.user.UserStatus;
 import pyre.goldbot.commands.*;
-import pyre.goldbot.db.GoldDao;
 import pyre.goldbot.listeners.AddGoldReactionListener;
 import pyre.goldbot.listeners.RemoveGoldReactionListener;
 
@@ -44,10 +43,6 @@ public class GoldBot {
             return;
         }
 
-        if (!GoldDao.init()) {
-            return;
-        }
-
         Locale locale = new Locale("pl", "PL");
         messages = ResourceBundle.getBundle("Messages", locale);
 
@@ -73,7 +68,7 @@ public class GoldBot {
             return;
         }
 
-        mainChannel = api.getTextChannelById(config.getProperty("mainChannelId")).orElse(null); //todo change id
+        mainChannel = api.getTextChannelById(config.getProperty("mainChannelId")).orElse(null);
         if (mainChannel == null) {
             logger.error("Cannot load main text channel");
             api.disconnect();
@@ -88,15 +83,15 @@ public class GoldBot {
         api.addListener(new AddGoldReactionListener());
         api.addListener(new RemoveGoldReactionListener());
 
-//        GoldManager.getInstance().initRanking();
+        GoldManager.getInstance().initRanking();
 
         // Print the invite url of your bot
         logger.info("You can invite the bot by using the following url: {}",
                 api.createBotInvite(Permissions.fromBitmask(402721792)));
     }
 
-    public static ResourceBundle getMessages() {
-        return messages;
+    public static String getMessage(String key) {
+        return messages.getString(key);
     }
 
     public static DiscordApi getApi() {

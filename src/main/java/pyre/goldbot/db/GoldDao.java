@@ -1,53 +1,123 @@
 package pyre.goldbot.db;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.service.ServiceRegistry;
-import pyre.goldbot.db.entity.DbGoldCollector;
-import pyre.goldbot.db.entity.DbGoldMessage;
+import org.hibernate.query.Query;
+import pyre.goldbot.db.entity.GoldCollector;
+import pyre.goldbot.db.entity.GoldMessage;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class GoldDao {
 
-    private static final Logger logger = LogManager.getLogger(GoldDao.class);
-
     private static final GoldDao INSTANCE = new GoldDao();
-
-    private static SessionFactory sessionFactory;
 
     private GoldDao() {
     }
 
-    public static boolean init() {
-        if (sessionFactory != null) {
-            return true;
+    public static GoldDao getInstance() {
+        return INSTANCE;
+    }
+
+    public void saveOrUpdate(GoldCollector goldCollector) {
+        TransactionUtil.doTransaction(() -> HibernateUtil.getSession().saveOrUpdate(goldCollector));
+    }
+
+    public void saveOrUpdate(Collection<GoldCollector> goldCollectors) {
+        TransactionUtil.doTransaction(() -> {
+            Session session = HibernateUtil.getSession();
+            for (GoldCollector goldCollector : goldCollectors) {
+                session.saveOrUpdate(goldCollector);
+            }
+        });
+    }
+
+    public GoldCollector getGoldCollectorWithMessages(String userId) {
+        return TransactionUtil.doTransaction(() -> {
+            Session session = HibernateUtil.getSession();
+            return session.createQuery("select c from GoldCollector c join fetch c.goldMessages where c.id = " +
+                    ":userId", GoldCollector.class)
+                    .setParameter("userId", userId)
+                    .uniqueResult();
+        });
+    }
+
+    public List<GoldCollector> getGoldCollectors() {
+        return TransactionUtil.doTransaction(() -> {
+            Session session = HibernateUtil.getSession();
+            Query<GoldCollector> query = session.createQuery("select c from GoldCollector c", GoldCollector.class);
+            return query.getResultList();
+        });
+    }
+
+    public List<GoldCollector> getGoldCollectorsWithMessages() {
+        return TransactionUtil.doTransaction(() -> {
+            Session session = HibernateUtil.getSession();
+            Query<GoldCollector> query = session.createQuery("select distinct c from GoldCollector c " +
+                    "join fetch c.goldMessages", GoldCollector.class);
+            return query.getResultList();
+        });
+    }
+
+    public Map<String, GoldCollector> getGoldCollectorsWithMessagesAsMap() {
+        return getGoldCollectorsWithMessages().stream()
+                .collect(Collectors.toMap(GoldCollector::getUserId, c -> c));
+    }
+
+    public void updateGoldCollectors(Map<String, GoldCollector> newCollectors) {
+        TransactionUtil.doTransaction(() -> {
+            List<GoldCollector> goldCollectors = getGoldCollectors();
+            for (GoldCollector goldCollector : goldCollectors) {
+                if (newCollectors.containsKey(goldCollector.getUserId())) {
+                    goldCollector.setGoldCount(newCollectors.get(goldCollector.getUserId()).getGoldCount());
+                    updateMessages(goldCollector, newCollectors.get(goldCollector.getUserId()).getGoldMessages());
+                    newCollectors.remove(goldCollector.getUserId());
+                } else {
+                    goldCollector.setGoldCount(0);
+                    goldCollector.getGoldMessages().clear();
+                }
+            }
+            saveOrUpdate(goldCollectors);
+            if (!newCollectors.isEmpty()) {
+                saveOrUpdate(newCollectors.values());
+            }
+        });
+    }
+
+    private void updateMessages(GoldCollector goldCollector, Set<GoldMessage> newMessages) {
+        List<GoldMessage> toRemove = new ArrayList<>();
+        Map<String, GoldMessage> newMessagesMap = newMessages.stream()
+                .collect(Collectors.toMap(GoldMessage::getMessageId, m -> m));
+        Set<GoldMessage> currentMessages = goldCollector.getGoldMessages();
+        for (GoldMessage currentMessage : currentMessages) {
+            if (newMessagesMap.containsKey(currentMessage.getMessageId())) {
+                currentMessage.setMessageGold(newMessagesMap.get(currentMessage.getMessageId()).getMessageGold());
+                newMessagesMap.remove(currentMessage.getMessageId());
+            } else {
+                toRemove.add(currentMessage);
+            }
         }
-        Configuration config = new Configuration();
-        config.configure();
-        config.addAnnotatedClass(DbGoldCollector.class);
-        config.addAnnotatedClass(DbGoldMessage.class);
+        toRemove.forEach(goldCollector::removeGoldMessage);
+        newMessagesMap.values().forEach(goldCollector::addGoldMessage);
+    }
 
-        String jdbcDbUrl = System.getenv("JDBC_DATABASE_URL");
-        if (jdbcDbUrl == null || jdbcDbUrl.isEmpty()) {
-            logger.error("No JDBC URL!");
-            return false;
-        }
-        config.setProperty("hibernate.connection.url", System.getenv("JDBC_DATABASE_URL"));
+    public List<GoldMessage> getGoldMessages(String userId) {
+        return TransactionUtil.doTransaction(() -> {
+            Session session = HibernateUtil.getSession();
+            Query<GoldMessage> query = session.createQuery("select m from GoldMessage m " +
+                    "where m.goldCollector.userId = :userId", GoldMessage.class);
+            query.setParameter("userId", userId);
+            return query.getResultList();
+            //return collector.getGoldMessages();
+        });
+    }
 
-        ServiceRegistry registry = new StandardServiceRegistryBuilder()
-                .applySettings(config.getProperties())
-                .build();
-
-        sessionFactory = config.buildSessionFactory(registry);
-        logger.info("Successfully connected to database!");
-
-        Session currentSession = sessionFactory.getCurrentSession();
-        currentSession.beginTransaction();
-        currentSession.save(new DbGoldCollector("1234"));
-        currentSession.getTransaction().commit();
-        return true;
+    public List<GoldCollector> getLeaders() {
+        return TransactionUtil.doTransaction(() -> {
+            Session session = HibernateUtil.getSession();
+            Query<GoldCollector> query = session.createQuery("select c from GoldCollector c " +
+                    "where c.goldCount = (select max(b.goldCount) from GoldCollector b)", GoldCollector.class);
+            return query.getResultList();
+        });
     }
 }

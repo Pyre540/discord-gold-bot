@@ -8,7 +8,9 @@ import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
-import pyre.goldbot.entity.GoldCollector;
+import pyre.goldbot.db.GoldDao;
+import pyre.goldbot.db.entity.GoldCollector;
+import pyre.goldbot.db.entity.GoldMessage;
 import pyre.goldbot.operation.CountGoldOperation;
 import pyre.goldbot.operation.Operation;
 
@@ -31,7 +33,6 @@ public class GoldManager {
     private Map<String, Instant> channelsToCount = new ConcurrentHashMap<>();
     private BlockingQueue<Operation> operationQueue = new LinkedBlockingQueue<>();
 
-    private Map<String, GoldCollector> goldCollectors = new HashMap<>();
     private SortedMap<Integer, List<GoldCollector>> ranking = new TreeMap<>();
 
     private List<GoldCollector> rankingLeaders = new ArrayList<>();
@@ -45,7 +46,7 @@ public class GoldManager {
             try {
                 while (true) {
                     Operation operation = operationQueue.take();
-                    operation.execute(goldCollectors);
+                    operation.execute();
                     synchronized (this) {
                         if (operation instanceof CountGoldOperation) {
                             channelsToCount.remove(operation.getChannelId());
@@ -67,6 +68,10 @@ public class GoldManager {
     }
 
     public synchronized void initRanking() {
+        rankingLeaders = GoldDao.getInstance().getLeaders();
+        rankingLeaders.sort(GoldCollector::compareTo);
+
+        Map<String, GoldCollector> goldCollectors = new HashMap<>();
         Collection<ServerTextChannel> textChannels = GoldBot.getApi().getServerTextChannels();
         for (ServerTextChannel textChannel : textChannels) {
             List<Message> goldMessages = textChannel.getMessagesAsStream()
@@ -76,11 +81,13 @@ public class GoldManager {
                 msg.getReactionByEmoji(GoldBot.getGoldEmoji()).ifPresent(r -> {
                     GoldCollector goldCollector =
                             goldCollectors.computeIfAbsent(msg.getAuthor().getIdAsString(), GoldCollector::new);
-                    goldCollector.getGoldMessages().add(msg.getLink());
-                    goldCollector.modifyScore(r.getCount());
+                    goldCollector.addGoldMessage(new GoldMessage(msg.getIdAsString(), goldCollector,
+                            msg.getCreationTimestamp(), r.getCount(), msg.getLink().toString()));
+                    goldCollector.modifyGoldCount(r.getCount());
                 });
             }
         }
+        GoldDao.getInstance().updateGoldCollectors(goldCollectors);
         updateRanking();
     }
 
@@ -109,16 +116,13 @@ public class GoldManager {
         return new TreeMap<>(ranking);
     }
 
-    public synchronized Map<String, GoldCollector> getGoldCollectors() {
-        return new HashMap<>(goldCollectors);
-    }
-
     private void updateRanking() {
         ranking.clear();
-        this.goldCollectors.values().stream()
+        List<GoldCollector> goldCollectors = GoldDao.getInstance().getGoldCollectors();
+        goldCollectors.stream()
                 .sorted(Comparator.reverseOrder())
                 .forEach(item -> {
-                    Integer score = item.getScore();
+                    Integer score = item.getGoldCount();
                     if (score == 0) {
                         return;
                     }
@@ -127,13 +131,15 @@ public class GoldManager {
                     } else {
                         Integer rank = ranking.lastKey();
                         List<GoldCollector> items = ranking.get(rank);
-                        if (!score.equals(items.get(0).getScore())) {
+                        if (!score.equals(items.get(0).getGoldCount())) {
                             ranking.put(rank + items.size(), new ArrayList<>());
                         }
                     }
                     ranking.get(ranking.lastKey()).add(item);
                 });
+
         List<GoldCollector> newLeaders = ranking.getOrDefault(1, new ArrayList<>());
+        newLeaders.sort(GoldCollector::compareTo);
         if (!rankingLeaders.equals(newLeaders)) {
             rankingLeaders = newLeaders;
             announceNewLeaders();
@@ -143,8 +149,8 @@ public class GoldManager {
 
     private void announceNewLeaders() {
         String msg;
-        if (rankingLeaders.isEmpty() || rankingLeaders.get(0).getScore() == 0) {
-            msg = String.format(GoldBot.getMessages().getString("announcement.noLeaders"), CROWN);
+        if (rankingLeaders.isEmpty() || rankingLeaders.get(0).getGoldCount() == 0) {
+            msg = String.format(GoldBot.getMessage("announcement.noLeaders"), CROWN);
         } else {
             DiscordApi api = GoldBot.getApi();
             Server server = api.getServers().iterator().next();
@@ -155,9 +161,9 @@ public class GoldManager {
                             .trim())
                     .collect(Collectors.joining(", "));
             if (rankingLeaders.size() > 1) {
-                msg = String.format(GoldBot.getMessages().getString("announcement.multipleLeaders"), CROWN, leaders);
+                msg = String.format(GoldBot.getMessage("announcement.multipleLeaders"), CROWN, leaders);
             } else {
-                msg = String.format(GoldBot.getMessages().getString("announcement.singleLeader"), CROWN, leaders);
+                msg = String.format(GoldBot.getMessage("announcement.singleLeader"), CROWN, leaders);
             }
         }
         new MessageBuilder().append(msg).send(GoldBot.getMainChannel());

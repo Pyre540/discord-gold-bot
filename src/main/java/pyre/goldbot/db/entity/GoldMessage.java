@@ -1,22 +1,23 @@
 package pyre.goldbot.db.entity;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "gold_messages")
-public class DbGoldMessage {
+public class GoldMessage implements Comparable<GoldMessage> {
 
     @Id
     @Column(name = "message_id")
     private String messageId;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
+    @ManyToOne
     @JoinColumn(name = "gold_collector_id")
-    private DbGoldCollector goldCollector;
+    private GoldCollector goldCollector;
 
     @Column(name = "message_timestamp")
-    private LocalDateTime messageTimestamp;
+    private Instant messageTimestamp;
 
     @Column(name = "message_gold")
     private int messageGold;
@@ -24,11 +25,11 @@ public class DbGoldMessage {
     @Column(name = "message_url")
     private String messageURL;
 
-    public DbGoldMessage() {
+    public GoldMessage() {
     }
 
-    public DbGoldMessage(String messageId, DbGoldCollector goldCollector, LocalDateTime messageTimestamp,
-                         int messageGold, String messageURL) {
+    public GoldMessage(String messageId, GoldCollector goldCollector, Instant messageTimestamp, int messageGold,
+                       String messageURL) {
         this.messageId = messageId;
         this.goldCollector = goldCollector;
         this.messageTimestamp = messageTimestamp;
@@ -44,19 +45,19 @@ public class DbGoldMessage {
         this.messageId = messageId;
     }
 
-    public DbGoldCollector getGoldCollector() {
+    public GoldCollector getGoldCollector() {
         return goldCollector;
     }
 
-    public void setGoldCollector(DbGoldCollector goldCollector) {
+    public void setGoldCollector(GoldCollector goldCollector) {
         this.goldCollector = goldCollector;
     }
 
-    public LocalDateTime getMessageTimestamp() {
+    public Instant getMessageTimestamp() {
         return messageTimestamp;
     }
 
-    public void setMessageTimestamp(LocalDateTime messageTimestamp) {
+    public void setMessageTimestamp(Instant messageTimestamp) {
         this.messageTimestamp = messageTimestamp;
     }
 
@@ -74,5 +75,31 @@ public class DbGoldMessage {
 
     public void setMessageURL(String messageURL) {
         this.messageURL = messageURL;
+    }
+
+    public void increaseMessageGold() {
+        messageGold++;
+    }
+
+    public void decreaseMessageGold() {
+        messageGold--;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GoldMessage that = (GoldMessage) o;
+        return messageId.equals(that.messageId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(messageId);
+    }
+
+    @Override
+    public int compareTo(GoldMessage o) {
+        return messageTimestamp.compareTo(o.messageTimestamp);
     }
 }

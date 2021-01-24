@@ -6,7 +6,7 @@ import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import pyre.goldbot.GoldBot;
 import pyre.goldbot.GoldManager;
-import pyre.goldbot.entity.GoldCollector;
+import pyre.goldbot.db.entity.GoldCollector;
 
 import java.util.List;
 import java.util.SortedMap;
@@ -29,13 +29,13 @@ public class RankingCommand implements MessageCreateListener {
                         e.getValue().stream()
                                 .map(v -> getUserDisplayName(api, v.getUserId()))
                                 .collect(Collectors.joining(", "))
-                                .replaceAll(GoldBot.CROWN, "")
+                                .replace(GoldBot.CROWN, "")
                                 .trim(),
-                        e.getValue().get(0).getScore()))
+                        e.getValue().get(0).getGoldCount()))
                 .collect(Collectors.joining("\n"));
         new MessageBuilder()
-                .append(GoldBot.getMessages().getString("ranking.message"))
-                .appendCode("java", rankingEntries.isEmpty() ? GoldBot.getMessages().getString("ranking.noRanking") :
+                .append(GoldBot.getMessage("ranking.message"))
+                .appendCode("java", rankingEntries.isEmpty() ? GoldBot.getMessage("ranking.noRanking") :
                         rankingEntries)
                 .send(event.getChannel());
     }

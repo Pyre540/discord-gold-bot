@@ -1,17 +1,21 @@
 package pyre.goldbot.commands;
 
 import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.MessageDecoration;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import pyre.goldbot.GoldBot;
-import pyre.goldbot.GoldManager;
-import pyre.goldbot.entity.GoldCollector;
+import pyre.goldbot.db.GoldDao;
+import pyre.goldbot.db.entity.GoldMessage;
 
-import java.net.URL;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Collection;
-import java.util.Map;
+import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class UsersGoldCommand implements MessageCreateListener {
@@ -37,25 +41,43 @@ public class UsersGoldCommand implements MessageCreateListener {
             }
         }
         if (user == null) {
-            event.getChannel().sendMessage(GoldBot.getMessages().getString("usersGold.noUser"));
+            event.getChannel().sendMessage(GoldBot.getMessage("usersGold.noUser"));
             return;
         }
 
-        Map<String, GoldCollector> goldCollectors = GoldManager.getInstance().getGoldCollectors();
-        GoldCollector goldCollector = goldCollectors.get(user.getIdAsString());
-        if (goldCollector != null && !goldCollector.getGoldMessages().isEmpty()) {
-            String links = goldCollector.getGoldMessages().stream()
-                    .map(URL::toString)
-                    .collect(Collectors.joining("\n"));
-            new MessageBuilder().append(String.format(GoldBot.getMessages().getString("usersGold.gold"),
-                    user.getDisplayName(server)))
-                    .appendNewLine()
-                    .append(links)
-                    .send(event.getChannel());
-        } else {
-            new MessageBuilder().append(String.format(GoldBot.getMessages().getString("usersGold.noGold"),
-                    user.getDisplayName(server)))
-                    .send(event.getChannel());
+        List<GoldMessage> goldMessages = GoldDao.getInstance().getGoldMessages(user.getIdAsString());
+        if (goldMessages.isEmpty()) {
+            String msg = String.format(GoldBot.getMessage("usersGold.noGold"), user.getDisplayName(server));
+            new MessageBuilder().append(msg).send(event.getChannel());
+            return;
         }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                .withLocale(Locale.forLanguageTag("PL"))
+                .withZone(ZoneId.systemDefault());
+
+        MessageBuilder mb = new MessageBuilder()
+                .append(String.format(GoldBot.getMessage("usersGold.gold"), user.getDisplayName(server)))
+                .appendNewLine();
+        List<GoldMessage> messages = goldMessages.stream()
+                .sorted()
+                .collect(Collectors.toList());
+        String date = GoldBot.getMessage("userMessage.date");
+        String goldCount = GoldBot.getMessage("userMessage.goldCount");
+        String link = GoldBot.getMessage("userMessage.link");
+        for (int i = 0; i < messages.size(); i++) {
+            if (i > 0 && i % 10 == 0) {
+                mb.send(event.getChannel());
+                mb = new MessageBuilder();
+            }
+            GoldMessage message = messages.get(i);
+            mb = mb.append((i + 1) + ".")
+                    .append(String.format(" %s ", date), MessageDecoration.BOLD)
+                    .append(formatter.format(message.getMessageTimestamp()))
+                    .append(String.format(" %s ", goldCount), MessageDecoration.BOLD).append(message.getMessageGold())
+                    .append(String.format(" %s ", link), MessageDecoration.BOLD).append(message.getMessageURL())
+                    .appendNewLine();
+        }
+         mb.send(event.getChannel());
     }
 }

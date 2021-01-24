@@ -37,7 +37,7 @@ public class StatusCommand implements MessageCreateListener {
 
         long seconds = ChronoUnit.SECONDS.between(tempDateTime, now);
 
-        event.getChannel().sendMessage(String.format(GoldBot.getMessages().getString("status.message"), years, months,
-                days, hours, minutes, seconds));
+        event.getChannel().sendMessage(String.format(GoldBot.getMessage("status.message"), years, months, days,
+                hours, minutes, seconds));
     }
 }

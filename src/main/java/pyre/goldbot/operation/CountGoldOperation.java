@@ -6,9 +6,10 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.Message;
 import pyre.goldbot.GoldBot;
-import pyre.goldbot.entity.GoldCollector;
+import pyre.goldbot.db.GoldDao;
+import pyre.goldbot.db.entity.GoldCollector;
+import pyre.goldbot.db.entity.GoldMessage;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,33 +20,36 @@ public class CountGoldOperation extends Operation {
 
     private int id;
     private int totalOperations;
-    private Message message;
 
-    public CountGoldOperation(DiscordApi api, String channelId, Instant msgTimestamp, int id, int totalOperations,
-                              Message message) {
-        super(api, channelId, msgTimestamp);
+    public CountGoldOperation(DiscordApi api, String channelId, int id, int totalOperations, Message message) {
+        super(api, channelId, message);
         this.id = id;
         this.totalOperations = totalOperations;
-        this.message = message;
     }
 
     @Override
-    public void execute(Map<String, GoldCollector> goldCollectors) {
+    public void execute() {
         ServerTextChannel textChannel = api.getServerTextChannelById(channelId).orElse(null);
         if (textChannel == null) {
             logger.error("Text channel {} does not exist!", channelId);
             return;
         }
-        message.edit(String.format(GoldBot.getMessages().getString("countGold.step"), id, totalOperations));
+
+        message.edit(String.format(GoldBot.getMessage("countGold.step"), id, totalOperations));
         List<Message> goldMessages = textChannel.getMessagesBeforeAsStream(message)
                 .filter(m -> m.getReactionByEmoji(GoldBot.getGoldEmoji()).isPresent())
                 .collect(Collectors.toList());
+        Map<String, GoldCollector> goldCollectors = GoldDao.getInstance().getGoldCollectorsWithMessagesAsMap();
         for (Message msg : goldMessages) {
             msg.getReactionByEmoji(GoldBot.getGoldEmoji()).ifPresent(r -> {
                 GoldCollector goldCollector =
                         goldCollectors.computeIfAbsent(msg.getAuthor().getIdAsString(), GoldCollector::new);
-                goldCollector.modifyScore(r.getCount());
+                goldCollector.modifyGoldCount(r.getCount());
+                GoldMessage newMessage = new GoldMessage(msg.getIdAsString(), goldCollector,
+                        msg.getCreationTimestamp(), r.getCount(), msg.getLink().toString());
+                goldCollector.addGoldMessage(newMessage);
             });
         }
+        GoldDao.getInstance().saveOrUpdate(goldCollectors.values());
     }
 }
