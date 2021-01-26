@@ -82,6 +82,7 @@ public class GoldBot {
         api.addListener(new UsersGoldCommand());
         api.addListener(new AddGoldReactionListener());
         api.addListener(new RemoveGoldReactionListener());
+        api.addListener(new SetPronounsCommand());
 
         GoldManager.getInstance().initRanking();
 

@@ -32,10 +32,19 @@ public class GoldDao {
         });
     }
 
+    public GoldCollector getGoldCollector(String userId) {
+        return TransactionUtil.doTransaction(() -> {
+            Session session = HibernateUtil.getSession();
+            return session.createQuery("select c from GoldCollector c where c.id = :userId", GoldCollector.class)
+                    .setParameter("userId", userId)
+                    .uniqueResult();
+        });
+    }
+
     public GoldCollector getGoldCollectorWithMessages(String userId) {
         return TransactionUtil.doTransaction(() -> {
             Session session = HibernateUtil.getSession();
-            return session.createQuery("select c from GoldCollector c join fetch c.goldMessages where c.id = " +
+            return session.createQuery("select c from GoldCollector c left join fetch c.goldMessages where c.id = " +
                     ":userId", GoldCollector.class)
                     .setParameter("userId", userId)
                     .uniqueResult();
@@ -54,7 +63,7 @@ public class GoldDao {
         return TransactionUtil.doTransaction(() -> {
             Session session = HibernateUtil.getSession();
             Query<GoldCollector> query = session.createQuery("select distinct c from GoldCollector c " +
-                    "join fetch c.goldMessages", GoldCollector.class);
+                    "left join fetch c.goldMessages", GoldCollector.class);
             return query.getResultList();
         });
     }
@@ -108,7 +117,6 @@ public class GoldDao {
                     "where m.goldCollector.userId = :userId", GoldMessage.class);
             query.setParameter("userId", userId);
             return query.getResultList();
-            //return collector.getGoldMessages();
         });
     }
 

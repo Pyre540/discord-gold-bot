@@ -8,6 +8,7 @@ import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import pyre.goldbot.GoldBot;
 import pyre.goldbot.db.GoldDao;
+import pyre.goldbot.db.entity.GoldCollector;
 import pyre.goldbot.db.entity.GoldMessage;
 
 import java.time.ZoneId;
@@ -45,9 +46,12 @@ public class UsersGoldCommand implements MessageCreateListener {
             return;
         }
 
-        List<GoldMessage> goldMessages = GoldDao.getInstance().getGoldMessages(user.getIdAsString());
-        if (goldMessages.isEmpty()) {
-            String msg = String.format(GoldBot.getMessage("usersGold.noGold"), user.getDisplayName(server));
+        GoldCollector goldCollector = GoldDao.getInstance().getGoldCollectorWithMessages(user.getIdAsString());
+        if (goldCollector == null || goldCollector.getGoldMessages().isEmpty()) {
+            GoldCollector.Pronouns pronouns = goldCollector == null ? GoldCollector.Pronouns.M :
+                    goldCollector.getPronouns();
+            String msg = String.format(GoldBot.getMessage("usersGold.noGold." + pronouns),
+                    user.getDisplayName(server));
             new MessageBuilder().append(msg).send(event.getChannel());
             return;
         }
@@ -57,9 +61,10 @@ public class UsersGoldCommand implements MessageCreateListener {
                 .withZone(ZoneId.systemDefault());
 
         MessageBuilder mb = new MessageBuilder()
-                .append(String.format(GoldBot.getMessage("usersGold.gold"), user.getDisplayName(server)))
+                .append(String.format(GoldBot.getMessage("usersGold.gold." + goldCollector.getPronouns()),
+                        user.getDisplayName(server)))
                 .appendNewLine();
-        List<GoldMessage> messages = goldMessages.stream()
+        List<GoldMessage> messages = goldCollector.getGoldMessages().stream()
                 .sorted()
                 .collect(Collectors.toList());
         String date = GoldBot.getMessage("userMessage.date");

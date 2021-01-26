@@ -14,8 +14,9 @@ public class GoldCollector implements Comparable<GoldCollector> {
     @Column(name = "gold_count")
     private int goldCount;
 
-    @Column(name = "pronouns")
-    private Pronouns pronouns;
+    @Column(name = "pronouns", nullable = false, columnDefinition = "varchar(1) default 'M'")
+    @Enumerated(EnumType.STRING)
+    private Pronouns pronouns = Pronouns.M;
 
     @OneToMany(mappedBy = "goldCollector", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<GoldMessage> goldMessages;

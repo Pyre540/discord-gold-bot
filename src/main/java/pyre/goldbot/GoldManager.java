@@ -163,7 +163,8 @@ public class GoldManager {
             if (rankingLeaders.size() > 1) {
                 msg = String.format(GoldBot.getMessage("announcement.multipleLeaders"), CROWN, leaders);
             } else {
-                msg = String.format(GoldBot.getMessage("announcement.singleLeader"), CROWN, leaders);
+                msg = String.format(GoldBot.getMessage("announcement.singleLeader." +
+                        rankingLeaders.get(0).getPronouns()), CROWN, leaders);
             }
         }
         new MessageBuilder().append(msg).send(GoldBot.getMainChannel());

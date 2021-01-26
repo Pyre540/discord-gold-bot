@@ -30,7 +30,8 @@ public class HelpCommand implements MessageCreateListener {
                 .addInlineField("!status", GoldBot.getMessage("help.statusCmd"))
                 .addInlineField("!countGold", GoldBot.getMessage("help.countCmd"))
                 .addInlineField("!ranking", GoldBot.getMessage("help.rankingCmd"))
-                .addInlineField("!usersGold <username>", GoldBot.getMessage("help.usersGold"));
+                .addInlineField("!usersGold <username>", GoldBot.getMessage("help.usersGold"))
+                .addInlineField("!setPronouns <value>", GoldBot.getMessage("help.setPronouns"));
         embed.setAuthor(author.join());
         event.getChannel().sendMessage(embed);
     }
