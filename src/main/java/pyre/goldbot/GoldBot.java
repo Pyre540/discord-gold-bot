@@ -27,6 +27,7 @@ public class GoldBot {
     private static ResourceBundle messages;
 
     private static final Properties config = new Properties();
+    private static final Properties applicationProps = new Properties();
 
     public static final LocalDateTime BOT_START = LocalDateTime.now();
 
@@ -52,6 +53,14 @@ public class GoldBot {
                 return;
             }
             config.load(input);
+        }
+
+        try (InputStream input = GoldBot.class.getClassLoader().getResourceAsStream("application.properties")) {
+            if (input == null) {
+                logger.error("Unable to find application.properties");
+                return;
+            }
+            applicationProps.load(input);
         }
 
         api = new DiscordApiBuilder()
@@ -105,5 +114,9 @@ public class GoldBot {
 
     public static TextChannel getMainChannel() {
         return mainChannel;
+    }
+
+    public static String getBotVersion() {
+        return applicationProps.getProperty("version");
     }
 }

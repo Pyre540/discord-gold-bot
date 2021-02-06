@@ -4,6 +4,7 @@
 - New command *!setPronouns*. Users can set their preferred pronouns, that is used in bot's messages. Possible values: M - male, F - female. Default: M.
 ### Changed
 - Store user and messages data in database.
+- *!status* command response uses embed message. Added info about version and author.
 ### Fixed
 - Fixed *!usersGold* command response not showing, when response is longer then 2000 characters (Discord's limit).
 ## 1.0.1

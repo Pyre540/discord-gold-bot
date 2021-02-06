@@ -1,9 +1,11 @@
 package pyre.goldbot.commands;
 
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import pyre.goldbot.GoldBot;
 
+import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
@@ -37,7 +39,14 @@ public class StatusCommand implements MessageCreateListener {
 
         long seconds = ChronoUnit.SECONDS.between(tempDateTime, now);
 
-        event.getChannel().sendMessage(String.format(GoldBot.getMessage("status.message"), years, months, days,
-                hours, minutes, seconds));
+        EmbedBuilder embed = new EmbedBuilder()
+                .setTitle(String.format(GoldBot.getMessage("status.title"), GoldBot.getBotVersion()))
+                .setDescription(String.format(GoldBot.getMessage("status.message"), years, months, days, hours,
+                        minutes, seconds))
+                .setThumbnail("https://static.wikia.nocookie.net/minecraft_gamepedia/images/8/8a/Gold_Ingot_JE4_BE2" +
+                        ".png/revision/latest")
+                .setColor(Color.ORANGE);
+
+        event.getChannel().sendMessage(embed);
     }
 }
