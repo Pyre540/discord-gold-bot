@@ -181,6 +181,12 @@ public class HibernateUtil {
         logAndRethrow(e);
     }
 
+    public static void shutdown() {
+        if (sessionFactory != null && !sessionFactory.isClosed()) {
+            sessionFactory.close();
+        }
+    }
+
     private static void logAndRethrow(Exception e) {
         if (e instanceof HibernateException) {
             logger.error("Database exception occurred. Rollbacking transaction!", e);

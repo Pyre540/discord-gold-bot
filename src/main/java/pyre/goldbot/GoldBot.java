@@ -10,6 +10,7 @@ import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.entity.permission.Permissions;
 import org.javacord.api.entity.user.UserStatus;
 import pyre.goldbot.commands.*;
+import pyre.goldbot.db.HibernateUtil;
 import pyre.goldbot.listeners.AddGoldReactionListener;
 import pyre.goldbot.listeners.RemoveGoldReactionListener;
 
@@ -98,6 +99,12 @@ public class GoldBot {
         // Print the invite url of your bot
         logger.info("You can invite the bot by using the following url: {}",
                 api.createBotInvite(Permissions.fromBitmask(402721792)));
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Shutting down GoldBot...");
+            api.disconnect();
+            HibernateUtil.shutdown();
+        }));
     }
 
     public static String getMessage(String key) {
