@@ -35,7 +35,7 @@ public class CountGoldOperation extends Operation {
             return;
         }
 
-        message.edit(String.format(GoldBot.getMessage("countGold.step"), id, totalOperations));
+        message.edit(GoldBot.getMessage("countGold.step", id, totalOperations));
         List<Message> goldMessages = textChannel.getMessagesBeforeAsStream(message)
                 .filter(m -> m.getReactionByEmoji(GoldBot.getGoldEmoji()).isPresent())
                 .collect(Collectors.toList());

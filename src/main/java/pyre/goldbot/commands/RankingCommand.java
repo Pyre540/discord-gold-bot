@@ -25,7 +25,7 @@ public class RankingCommand implements MessageCreateListener {
         SortedMap<Integer, List<GoldCollector>> ranking = GoldManager.getInstance().getRanking();
         DiscordApi api = event.getApi();
         String rankingEntries = ranking.entrySet().stream()
-                .map(e -> String.format("%d. %s(%d pkt.)", e.getKey(),
+                .map(e -> GoldBot.getMessage("ranking.record", e.getKey(),
                         e.getValue().stream()
                                 .map(v -> getUserDisplayName(api, v.getUserId()))
                                 .collect(Collectors.joining(", "))

@@ -40,9 +40,8 @@ public class StatusCommand implements MessageCreateListener {
         long seconds = ChronoUnit.SECONDS.between(tempDateTime, now);
 
         EmbedBuilder embed = new EmbedBuilder()
-                .setTitle(String.format(GoldBot.getMessage("status.title"), GoldBot.getBotVersion()))
-                .setDescription(String.format(GoldBot.getMessage("status.message"), years, months, days, hours,
-                        minutes, seconds))
+                .setTitle(GoldBot.getMessage("status.title", GoldBot.getBotVersion()))
+                .setDescription(GoldBot.getMessage("status.message", years, months, days, hours, minutes, seconds))
                 .setThumbnail("https://static.wikia.nocookie.net/minecraft_gamepedia/images/8/8a/Gold_Ingot_JE4_BE2" +
                         ".png/revision/latest")
                 .setColor(Color.ORANGE);

@@ -50,8 +50,7 @@ public class UsersGoldCommand implements MessageCreateListener {
         if (goldCollector == null || goldCollector.getGoldMessages().isEmpty()) {
             GoldCollector.Pronouns pronouns = goldCollector == null ? GoldCollector.Pronouns.M :
                     goldCollector.getPronouns();
-            String msg = String.format(GoldBot.getMessage("usersGold.noGold." + pronouns),
-                    user.getDisplayName(server));
+            String msg = GoldBot.getMessage("usersGold.noGold." + pronouns, user.getDisplayName(server));
             new MessageBuilder().append(msg).send(event.getChannel());
             return;
         }
@@ -61,7 +60,7 @@ public class UsersGoldCommand implements MessageCreateListener {
                 .withZone(ZoneId.systemDefault());
 
         MessageBuilder mb = new MessageBuilder()
-                .append(String.format(GoldBot.getMessage("usersGold.gold." + goldCollector.getPronouns()),
+                .append(GoldBot.getMessage("usersGold.gold." + goldCollector.getPronouns(),
                         user.getDisplayName(server)))
                 .appendNewLine();
         List<GoldMessage> messages = goldCollector.getGoldMessages().stream()

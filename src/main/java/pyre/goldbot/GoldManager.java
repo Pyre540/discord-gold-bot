@@ -150,7 +150,7 @@ public class GoldManager {
     private void announceNewLeaders() {
         String msg;
         if (rankingLeaders.isEmpty() || rankingLeaders.get(0).getGoldCount() == 0) {
-            msg = String.format(GoldBot.getMessage("announcement.noLeaders"), CROWN);
+            msg = GoldBot.getMessage("announcement.noLeaders", CROWN);
         } else {
             DiscordApi api = GoldBot.getApi();
             Server server = api.getServers().iterator().next();
@@ -161,10 +161,10 @@ public class GoldManager {
                             .trim())
                     .collect(Collectors.joining(", "));
             if (rankingLeaders.size() > 1) {
-                msg = String.format(GoldBot.getMessage("announcement.multipleLeaders"), CROWN, leaders);
+                msg = GoldBot.getMessage("announcement.multipleLeaders", CROWN, leaders);
             } else {
-                msg = String.format(GoldBot.getMessage("announcement.singleLeader." +
-                        rankingLeaders.get(0).getPronouns()), CROWN, leaders);
+                msg = GoldBot.getMessage("announcement.singleLeader." + rankingLeaders.get(0).getPronouns(), CROWN,
+                        leaders);
             }
         }
         new MessageBuilder().append(msg).send(GoldBot.getMainChannel());

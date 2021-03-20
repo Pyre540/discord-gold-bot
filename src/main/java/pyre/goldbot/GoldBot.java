@@ -107,8 +107,9 @@ public class GoldBot {
         }));
     }
 
-    public static String getMessage(String key) {
-        return messages.getString(key);
+    public static String getMessage(String key, Object... params) {
+        String msg = messages.getString(key);
+        return String.format(msg, params);
     }
 
     public static DiscordApi getApi() {
