@@ -98,12 +98,12 @@ public class GoldCollector implements Comparable<GoldCollector> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GoldCollector that = (GoldCollector) o;
-        return goldCount == that.goldCount && userId.equals(that.userId);
+        return userId.equals(that.userId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId, goldCount);
+        return Objects.hash(userId);
     }
 
     @Override
