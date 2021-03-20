@@ -4,6 +4,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.server.Server;
+import org.javacord.api.entity.user.User;
+import pyre.goldbot.GoldBot;
 import pyre.goldbot.db.GoldDao;
 import pyre.goldbot.db.entity.GoldCollector;
 import pyre.goldbot.db.entity.GoldMessage;
@@ -44,5 +48,14 @@ public class RemoveGoldOperation extends Operation {
         }
         goldCollector.decreaseGoldCount();
         GoldDao.getInstance().saveOrUpdate(goldCollector);
+
+        if (goldCollector.getGoldCount() == 69) {
+            Server server = GoldBot.getApi().getServers().iterator().next();
+            User user = GoldBot.getApi().getUserById(goldCollector.getUserId()).join();
+            new MessageBuilder()
+                    .append(GoldBot.getMessage("usersGold.nice", user.getDisplayName(server),
+                            GoldBot.getGoldEmoji().getMentionTag()))
+                    .send(GoldBot.getMainChannel());
+        }
     }
 }

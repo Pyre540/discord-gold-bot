@@ -3,6 +3,7 @@
 ### Added
 - New command *!setPronouns*. Users can set their preferred pronouns, that is used in bot's messages. Possible values: M - male, F - female. Default: M.
 - Weekly Gold summary/ranking.
+- Nice message :)
 ### Changed
 - Store user and messages data in database.
 - *!status* command response uses embed message. Added info about version and author.
