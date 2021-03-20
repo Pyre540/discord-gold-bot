@@ -5,6 +5,8 @@ import org.hibernate.query.Query;
 import pyre.goldbot.db.entity.GoldCollector;
 import pyre.goldbot.db.entity.GoldMessage;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -125,6 +127,17 @@ public class GoldDao {
             Session session = HibernateUtil.getSession();
             Query<GoldCollector> query = session.createQuery("select c from GoldCollector c " +
                     "where c.goldCount = (select max(b.goldCount) from GoldCollector b)", GoldCollector.class);
+            return query.getResultList();
+        });
+    }
+
+    public List<GoldMessage> getLastWeekGoldMessages() {
+        return TransactionUtil.doTransaction(() -> {
+            Instant date = Instant.now().minus(7, ChronoUnit.DAYS);
+            Session session = HibernateUtil.getSession();
+            Query<GoldMessage> query = session.createQuery("select m from GoldMessage m " +
+                    "where m.messageTimestamp >= :date", GoldMessage.class)
+                    .setParameter("date", date);
             return query.getResultList();
         });
     }

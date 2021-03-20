@@ -9,10 +9,12 @@ import org.javacord.api.entity.emoji.KnownCustomEmoji;
 import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.entity.permission.Permissions;
 import org.javacord.api.entity.user.UserStatus;
+import org.quartz.SchedulerException;
 import pyre.goldbot.commands.*;
 import pyre.goldbot.db.HibernateUtil;
 import pyre.goldbot.listeners.AddGoldReactionListener;
 import pyre.goldbot.listeners.RemoveGoldReactionListener;
+import pyre.goldbot.periodic.PeriodicJobScheduler;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +40,7 @@ public class GoldBot {
     private static KnownCustomEmoji goldEmoji;
     private static TextChannel mainChannel;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, SchedulerException {
         String token = System.getenv("token");
         if (token == null || token.isEmpty()) {
             logger.error("No bot token");
@@ -94,6 +96,8 @@ public class GoldBot {
         api.addListener(new RemoveGoldReactionListener());
         api.addListener(new SetPronounsCommand());
 
+        PeriodicJobScheduler.init();
+
         GoldManager.getInstance().initRanking();
 
         // Print the invite url of your bot
@@ -104,6 +108,7 @@ public class GoldBot {
             logger.info("Shutting down GoldBot...");
             api.disconnect();
             HibernateUtil.shutdown();
+            PeriodicJobScheduler.shutdown();
         }));
     }
 
