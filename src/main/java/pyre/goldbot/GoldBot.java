@@ -38,6 +38,7 @@ public class GoldBot {
 
     private static DiscordApi api;
     private static KnownCustomEmoji goldEmoji;
+    private static KnownCustomEmoji kekmEmoji;
     private static TextChannel mainChannel;
 
     public static void main(String[] args) throws IOException, SchedulerException {
@@ -76,6 +77,13 @@ public class GoldBot {
         goldEmoji = api.getCustomEmojiById(config.getProperty("goldEmojiId")).orElse(null);
         if (goldEmoji == null) {
             logger.error("Cannot load gold emoji");
+            api.disconnect();
+            return;
+        }
+
+        kekmEmoji = api.getCustomEmojiById(config.getProperty("kekmEmojiId")).orElse(null);
+        if (kekmEmoji == null) {
+            logger.error("Cannot load kekm emoji");
             api.disconnect();
             return;
         }
@@ -123,6 +131,10 @@ public class GoldBot {
 
     public static KnownCustomEmoji getGoldEmoji() {
         return goldEmoji;
+    }
+
+    public static KnownCustomEmoji getKekmEmoji() {
+        return kekmEmoji;
     }
 
     public static TextChannel getMainChannel() {
